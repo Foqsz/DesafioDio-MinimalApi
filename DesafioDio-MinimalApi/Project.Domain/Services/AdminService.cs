@@ -2,6 +2,7 @@
 using DesafioDio_MinimalApi.Project.Domain.Entities;
 using DesafioDio_MinimalApi.Project.Domain.Interfaces;
 using DesafioDio_MinimalApi.Project.Infrastucture.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace DesafioDio_MinimalApi.Project.Domain.Services;
 
@@ -13,10 +14,9 @@ public class AdminService : IAdminService
         _context = dbcontext;
     }
 
-    public Admin? Login(LoginDTO loginDTO)
+    public async Task<Admin?> Login(LoginDTO loginDTO)
     {
-        var adm = _context.Administradores.Where(admin => admin.Email == loginDTO.Email && admin.Senha == loginDTO.Senha).FirstOrDefault();
-        return adm;
-         
+        var adm = await _context.Administradores.Where(admin => admin.Email == loginDTO.Email && admin.Senha == loginDTO.Senha).FirstOrDefaultAsync();
+        return adm; 
     }
 }

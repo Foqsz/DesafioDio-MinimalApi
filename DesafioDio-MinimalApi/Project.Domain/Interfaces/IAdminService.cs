@@ -5,6 +5,6 @@ namespace DesafioDio_MinimalApi.Project.Domain.Interfaces;
 
 public interface IAdminService
 {
-    Admin? Login(LoginDTO loginDTO);
+    Task<Admin?> Login(LoginDTO loginDTO);
 
 }

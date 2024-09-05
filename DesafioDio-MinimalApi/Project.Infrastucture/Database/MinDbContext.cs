@@ -9,6 +9,7 @@ public class MinDbContext : DbContext
     { }
 
     public DbSet<Admin>? Administradores { get; set; }
+    public DbSet<Vehicle>? Veiculos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

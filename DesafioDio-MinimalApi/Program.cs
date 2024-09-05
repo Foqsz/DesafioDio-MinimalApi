@@ -13,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 var connectionString = builder.Configuration.GetConnectionString("mysql");
 
