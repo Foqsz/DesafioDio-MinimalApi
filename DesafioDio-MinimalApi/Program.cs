@@ -1,3 +1,5 @@
+using DesafioDio_MinimalApi.Project.Domain.DTOs;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,8 +32,3 @@ app.MapPost("/login", (LoginDTO loginDTO) =>
  
 app.Run();
   
-public class LoginDTO
-{
-    public string Email { get; set; } = default!;
-    public string Senha { get; set; } = default!;
-}
