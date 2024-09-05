@@ -9,12 +9,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var connectionString = builder.Configuration.GetConnectionString("mysql");
+
 builder.Services.AddDbContext<MinDbContext>(options =>
 {
-    options.UseMySql(
-    builder.Configuration.GetConnectionString("mysql"),
-    ServerVersion.AutoDetect("mysql"));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
+
 
 var app = builder.Build();
 
