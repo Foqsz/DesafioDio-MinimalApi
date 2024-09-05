@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Project.Domain\Entities\" />
     <Folder Include="Project.Domain\Services\" />
   </ItemGroup>
 

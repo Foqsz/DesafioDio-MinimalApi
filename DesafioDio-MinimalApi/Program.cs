@@ -1,4 +1,6 @@
 using DesafioDio_MinimalApi.Project.Domain.DTOs;
+using DesafioDio_MinimalApi.Project.Infrastucture.Database;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<MinDbContext>(options =>
+{
+    options.UseMySql(
+    builder.Configuration.GetConnectionString("mysql"),
+    ServerVersion.AutoDetect("mysql"));
+});
 
 var app = builder.Build();
 
@@ -29,6 +38,6 @@ app.MapPost("/login", (LoginDTO loginDTO) =>
         return Results.Unauthorized();
     }
 });
- 
+
 app.Run();
-  
+
