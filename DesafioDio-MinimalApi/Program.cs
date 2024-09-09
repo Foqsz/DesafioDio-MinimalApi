@@ -68,11 +68,55 @@ app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleServic
     return Results.Created($"/veiculo/{vehicle.Id}", vehicle);
 }).WithTags("Veiculos");
 
-app.MapGet("/veiculos", async ([FromQuery]int? pagina, IVehicleService vehicleService) =>
+app.MapGet("/veiculos", async ([FromQuery] int? pagina, IVehicleService vehicleService) =>
 {
     var vehicles = await vehicleService.GetVehicles(pagina);
 
     return Results.Ok(vehicles);
+}).WithTags("Veiculos");
+
+app.MapGet("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleService) =>
+{
+    var vehicleId = await vehicleService.GetVehicleId(id);
+
+    if (vehicleId is null)
+    {
+        return Results.NotFound("Veiculo não encontrado");
+    }
+
+    return Results.Ok(vehicleId);
+}).WithTags("Veiculos");
+
+app.MapPut("/veiculos/{id}", async ([FromRoute] int id, VehicleDTO vehicleDto,IVehicleService vehicleService) =>
+{
+    var vehicle = await vehicleService.GetVehicleId(id);
+
+    if (vehicle is null)
+    {
+        return Results.NotFound("Veiculo não encontrado");
+    }
+     
+    vehicle.Nome = vehicleDto.Nome;
+    vehicle.Marca = vehicleDto.Marca;
+    vehicle.Ano = vehicleDto.Ano;
+
+    await vehicleService.GetVehicleUpdate(vehicle);
+
+    return Results.Ok(vehicle);
+}).WithTags("Veiculos");
+
+app.MapDelete("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleService) =>
+{
+    var vehicle = await vehicleService.GetVehicleId(id);
+
+    if (vehicle is null)
+    {
+        return Results.NotFound("Veiculo não encontrado");
+    } 
+
+    await vehicleService.GetVehicleDelete(vehicle);
+
+    return Results.Ok();
 }).WithTags("Veiculos");
 #endregion
 
