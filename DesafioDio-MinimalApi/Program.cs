@@ -49,7 +49,7 @@ app.MapPost("/Administradores/login", ([FromBody] LoginDTO loginDTO, IAdminServi
     {
         return Results.Unauthorized();
     }
-});
+}).WithTags("Administradores");
 #endregion
 
 #region Veículos
@@ -66,14 +66,14 @@ app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleServic
     await vehicleService.GetVehicleCreate(vehicle);
 
     return Results.Created($"/veiculo/{vehicle.Id}", vehicle);
-});
+}).WithTags("Veiculos");
 
 app.MapGet("/veiculos", async ([FromQuery]int? pagina, IVehicleService vehicleService) =>
 {
     var vehicles = await vehicleService.GetVehicles(pagina);
 
     return Results.Ok(vehicles);
-});
+}).WithTags("Veiculos");
 #endregion
 
 #region App
