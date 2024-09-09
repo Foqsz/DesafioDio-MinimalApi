@@ -5,6 +5,10 @@ namespace DesafioDio_MinimalApi.Project.Domain.Interfaces;
 
 public interface IAdminService
 {
-    Task<Admin?> Login(LoginDTO loginDTO);
+    Task<IEnumerable<Admin>> GetAdminAll(int? pagina);
+    Task<Admin>? GetAdminById(int id);
+    Task<Admin> Login(LoginDTO loginDTO);
+    Task<Admin> GetCreateAdmin(Admin admin);
+
 
 }
