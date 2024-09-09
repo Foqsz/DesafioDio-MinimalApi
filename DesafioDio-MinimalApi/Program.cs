@@ -55,6 +55,20 @@ app.MapPost("/Administradores/login", ([FromBody] LoginDTO loginDTO, IAdminServi
 #region Veículos
 app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleService vehicleService) =>
 {
+    if (string.IsNullOrEmpty(veiculoDTO.Nome))
+    {
+        return Results.NotFound("O Nome não pode ser vazio");
+    }
+
+    if (string.IsNullOrEmpty(veiculoDTO.Marca))
+    {
+        return Results.NotFound("A marca não pode ficar em branco");
+    }
+
+    if (veiculoDTO.Ano < 1950)
+    {
+        return Results.NotFound("Veículo muito antigo. Aceitando apenas anos superiores a 1950.");
+    }
 
     var vehicle = new Vehicle
     {
@@ -99,6 +113,21 @@ app.MapPut("/veiculos/{id}", async ([FromRoute] int id, VehicleDTO vehicleDto,IV
     vehicle.Nome = vehicleDto.Nome;
     vehicle.Marca = vehicleDto.Marca;
     vehicle.Ano = vehicleDto.Ano;
+
+    if (string.IsNullOrEmpty(vehicle.Nome))
+    {
+        return Results.NotFound("O Nome não pode ser vazio");
+    }
+
+    if (string.IsNullOrEmpty(vehicle.Marca))
+    {
+        return Results.NotFound("A marca não pode ficar em branco");
+    }
+
+    if (vehicle.Ano < 1950)
+    {
+        return Results.NotFound("Veículo muito antigo. Aceitando apenas anos superiores a 1950.");
+    }
 
     await vehicleService.GetVehicleUpdate(vehicle);
 
