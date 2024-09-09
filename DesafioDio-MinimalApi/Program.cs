@@ -67,6 +67,13 @@ app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleServic
 
     return Results.Created($"/veiculo/{vehicle.Id}", vehicle);
 });
+
+app.MapGet("/veiculos", async ([FromQuery]int? pagina, IVehicleService vehicleService) =>
+{
+    var vehicles = await vehicleService.GetVehicles(pagina);
+
+    return Results.Ok(vehicles);
+});
 #endregion
 
 #region App

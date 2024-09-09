@@ -15,20 +15,22 @@ public class VehicleService : IVehicleService
         _context = context;
     }
 
-    public async Task<IEnumerable<Vehicle>> GetVehicles(int pagina = 1, string? nome = null, string? marca = null)
+    public async Task<IEnumerable<Vehicle>> GetVehicles(int? pagina = 1, string? nome = null, string? marca = null)
     {
         var vehicleQuery = _context.Veiculos.AsQueryable();
 
         if (!string.IsNullOrEmpty(nome))
         {
             vehicleQuery.Where(v => v.Nome.ToLower().Contains(nome));
-             
+
         }
 
         int itensPorPagina = 10;
 
-        vehicleQuery = vehicleQuery.Skip((pagina - 1) * itensPorPagina).Take(itensPorPagina);
-
+        if (pagina != null)
+        {
+            vehicleQuery = vehicleQuery.Skip(((int)pagina - 1) * itensPorPagina).Take(itensPorPagina);
+        }
         return await vehicleQuery.ToListAsync();
     }
 
