@@ -1,10 +1,12 @@
 using DesafioDio_MinimalApi.Project.Domain.DTOs;
+using DesafioDio_MinimalApi.Project.Domain.Entities;
 using DesafioDio_MinimalApi.Project.Domain.Interfaces;
 using DesafioDio_MinimalApi.Project.Domain.Services;
 using DesafioDio_MinimalApi.Project.Infrastucture.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+#region Builder
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,7 +25,9 @@ builder.Services.AddDbContext<MinDbContext>(options =>
 });
 
 var app = builder.Build();
+#endregion
 
+#region Swagger
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -32,8 +36,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+#endregion
 
-app.MapPost("/login", ([FromBody] LoginDTO loginDTO, IAdminService administradorService) =>
+#region Administradores
+app.MapPost("/Administradores/login", ([FromBody] LoginDTO loginDTO, IAdminService administradorService) =>
 {
     if (administradorService.Login(loginDTO) != null)
     {
@@ -44,6 +50,25 @@ app.MapPost("/login", ([FromBody] LoginDTO loginDTO, IAdminService administrador
         return Results.Unauthorized();
     }
 });
+#endregion
 
+#region Veículos
+app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleService vehicleService) =>
+{
+
+    var vehicle = new Vehicle
+    {
+        Nome = veiculoDTO.Nome,
+        Marca = veiculoDTO.Marca,
+        Ano = veiculoDTO.Ano
+    };
+
+    await vehicleService.GetVehicleCreate(vehicle);
+
+    return Results.Created($"/veiculo/{vehicle.Id}", vehicle);
+});
+#endregion
+
+#region App
 app.Run();
-
+#endregion

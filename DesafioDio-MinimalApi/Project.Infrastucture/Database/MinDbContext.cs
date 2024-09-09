@@ -8,8 +8,8 @@ public class MinDbContext : DbContext
     public MinDbContext(DbContextOptions<MinDbContext> options) : base(options)
     { }
 
-    public DbSet<Admin>? Administradores { get; set; }
-    public DbSet<Vehicle>? Veiculos { get; set; }
+    public DbSet<Admin> Administradores { get; set; }
+    public DbSet<Vehicle> Veiculos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
