@@ -5,6 +5,7 @@ using DesafioDio_MinimalApi.Project.Domain.Interfaces;
 using DesafioDio_MinimalApi.Project.Domain.Services;
 using DesafioDio_MinimalApi.Project.Infrastucture.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -106,6 +107,7 @@ string GerarTokenJwt(Admin admin)
     {
         new Claim("Email", admin.Email),
         new Claim("Perfil", admin.Perfil),
+        new Claim(ClaimTypes.Role, admin.Perfil),
     };
 
     var token = new JwtSecurityToken(
@@ -154,7 +156,7 @@ app.MapGet("/Administradores", async ([FromQuery] int? pagina, IAdminService adm
 
     return Results.Ok(adms);
 
-}).RequireAuthorization().WithTags("Administradores");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm"}).WithTags("Administradores");
 
 app.MapGet("/Administradores/{id}", async ([FromRoute] int id, IAdminService administradorService) =>
 {
@@ -170,7 +172,7 @@ app.MapGet("/Administradores/{id}", async ([FromRoute] int id, IAdminService adm
         Email = adminId.Email,
         Perfil = adminId.Perfil
     });
-}).RequireAuthorization().WithTags("Administradores");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" }).WithTags("Administradores");
 
 app.MapPost("/Administradores", async ([FromBody] AdminDTO adminDTO, IAdminService administradorService) =>
 {
@@ -204,7 +206,7 @@ app.MapPost("/Administradores", async ([FromBody] AdminDTO adminDTO, IAdminServi
         Perfil = admin.Perfil
     });
 
-}).RequireAuthorization().WithTags("Administradores");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" }).WithTags("Administradores");
 #endregion
 
 #region Veículos
@@ -214,7 +216,7 @@ app.MapGet("/veiculos", async ([FromQuery] int? pagina, IVehicleService vehicleS
     var vehicles = await vehicleService.GetVehicles(pagina);
 
     return Results.Ok(vehicles);
-}).RequireAuthorization().WithTags("Veiculos");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm,Editor" }).WithTags("Veiculos");
 
 app.MapGet("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleService) =>
 {
@@ -226,7 +228,7 @@ app.MapGet("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleS
     }
 
     return Results.Ok(vehicleId);
-}).RequireAuthorization().WithTags("Veiculos");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm,Editor" }).WithTags("Veiculos");
 
 app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleService vehicleService) =>
 {
@@ -255,7 +257,7 @@ app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleServic
     await vehicleService.GetVehicleCreate(vehicle);
 
     return Results.Created($"/veiculo/{vehicle.Id}", vehicle);
-}).RequireAuthorization().WithTags("Veiculos");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" }).WithTags("Veiculos");
 
 app.MapPut("/veiculos/{id}", async ([FromRoute] int id, VehicleDTO vehicleDto, IVehicleService vehicleService) =>
 {
@@ -288,7 +290,7 @@ app.MapPut("/veiculos/{id}", async ([FromRoute] int id, VehicleDTO vehicleDto, I
     await vehicleService.GetVehicleUpdate(vehicle);
 
     return Results.Ok(vehicle);
-}).RequireAuthorization().WithTags("Veiculos");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" }).WithTags("Veiculos");
 
 app.MapDelete("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleService) =>
 {
@@ -302,7 +304,7 @@ app.MapDelete("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehic
     await vehicleService.GetVehicleDelete(vehicle);
 
     return Results.Ok();
-}).RequireAuthorization().WithTags("Veiculos");
+}).RequireAuthorization().RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" }).WithTags("Veiculos");
 #endregion
 
 #region App
