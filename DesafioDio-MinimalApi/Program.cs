@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -15,6 +16,7 @@ using System.Text;
 #region Builder
 var builder = WebApplication.CreateBuilder(args);
 
+#region Token Jwt
 var key = builder.Configuration.GetSection("Jwt").ToString();
 if (string.IsNullOrEmpty(key)) key = "123456";
 
@@ -27,17 +29,45 @@ builder.Services.AddAuthentication(option =>
     option.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateLifetime = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+        ValidateIssuer = false,
+        ValidateAudience = false
     };
 });
 
 builder.Services.AddAuthorization();
+#endregion
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Insira seu Token Jwt aqui!"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
@@ -65,6 +95,7 @@ app.UseHttpsRedirection();
 
 #region Administradores
 
+#region Gerar Token Jwt
 string GerarTokenJwt(Admin admin)
 {
     if (string.IsNullOrEmpty(key)) return string.Empty;
@@ -85,6 +116,26 @@ string GerarTokenJwt(Admin admin)
 
     return new JwtSecurityTokenHandler().WriteToken(token);
 }
+#endregion
+
+app.MapPost("/Administradores/login", async ([FromBody] LoginDTO loginDTO, IAdminService administradorService) =>
+{
+    var adm = await administradorService.Login(loginDTO);
+    if (adm != null)
+    {
+        string token = GerarTokenJwt(adm);
+        return Results.Ok(new AdmConnectedDTO
+        {
+            Email = adm.Email,
+            Perfil = adm.Perfil,
+            Token = token
+        });
+    }
+    else
+    {
+        return Results.Unauthorized();
+    }
+}).AllowAnonymous().WithTags("Administradores");
 
 app.MapGet("/Administradores", async ([FromQuery] int? pagina, IAdminService administradorService) =>
 {
@@ -120,25 +171,6 @@ app.MapGet("/Administradores/{id}", async ([FromRoute] int id, IAdminService adm
         Perfil = adminId.Perfil
     });
 }).RequireAuthorization().WithTags("Administradores");
-
-app.MapPost("/Administradores/login", async ([FromBody] LoginDTO loginDTO, IAdminService administradorService) =>
-{
-    var adm = await administradorService.Login(loginDTO);
-    if (adm != null)
-    {
-        string token = GerarTokenJwt(adm);
-        return Results.Ok(new AdmConnectedDTO
-        {
-            Email = adm.Email,
-            Perfil = adm.Perfil,
-            Token = token
-        });
-    }
-    else
-    {
-        return Results.Unauthorized();
-    }
-}).WithTags("Administradores");
 
 app.MapPost("/Administradores", async ([FromBody] AdminDTO adminDTO, IAdminService administradorService) =>
 {
