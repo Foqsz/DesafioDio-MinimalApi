@@ -4,11 +4,35 @@ using DesafioDio_MinimalApi.Project.Domain.Enuns;
 using DesafioDio_MinimalApi.Project.Domain.Interfaces;
 using DesafioDio_MinimalApi.Project.Domain.Services;
 using DesafioDio_MinimalApi.Project.Infrastucture.Database;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 #region Builder
 var builder = WebApplication.CreateBuilder(args);
+
+var key = builder.Configuration.GetSection("Jwt").ToString();
+if (string.IsNullOrEmpty(key)) key = "123456";
+
+builder.Services.AddAuthentication(option =>
+{
+    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(option =>
+{
+    option.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateLifetime = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -18,7 +42,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 
-var connectionString = builder.Configuration.GetConnectionString("mysql");
+var connectionString = builder.Configuration.GetConnectionString("MySql");
 
 builder.Services.AddDbContext<MinDbContext>(options =>
 {
@@ -41,12 +65,33 @@ app.UseHttpsRedirection();
 
 #region Administradores
 
+string GerarTokenJwt(Admin admin)
+{
+    if (string.IsNullOrEmpty(key)) return string.Empty;
+    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+    var claims = new List<Claim>()
+    {
+        new Claim("Email", admin.Email),
+        new Claim("Perfil", admin.Perfil),
+    };
+
+    var token = new JwtSecurityToken(
+        claims: claims,
+        expires: DateTime.Now.AddDays(1),
+        signingCredentials: credentials
+    );
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
+
 app.MapGet("/Administradores", async ([FromQuery] int? pagina, IAdminService administradorService) =>
 {
     var adms = new List<ListAdminDTO>();
 
     var adminAll = await administradorService.GetAdminAll(pagina);
-    
+
     foreach (var admin in adminAll)
     {
         adms.Add(new ListAdminDTO
@@ -56,9 +101,9 @@ app.MapGet("/Administradores", async ([FromQuery] int? pagina, IAdminService adm
         });
     }
 
-    return Results.Ok(adms);     
+    return Results.Ok(adms);
 
-}).WithTags("Administradores");
+}).RequireAuthorization().WithTags("Administradores");
 
 app.MapGet("/Administradores/{id}", async ([FromRoute] int id, IAdminService administradorService) =>
 {
@@ -74,13 +119,20 @@ app.MapGet("/Administradores/{id}", async ([FromRoute] int id, IAdminService adm
         Email = adminId.Email,
         Perfil = adminId.Perfil
     });
-}).WithTags("Administradores");
+}).RequireAuthorization().WithTags("Administradores");
 
-app.MapPost("/Administradores/login", ([FromBody] LoginDTO loginDTO, IAdminService administradorService) =>
+app.MapPost("/Administradores/login", async ([FromBody] LoginDTO loginDTO, IAdminService administradorService) =>
 {
-    if (administradorService.Login(loginDTO) != null)
+    var adm = await administradorService.Login(loginDTO);
+    if (adm != null)
     {
-        return Results.Ok("Login Efetuado!");
+        string token = GerarTokenJwt(adm);
+        return Results.Ok(new AdmConnectedDTO
+        {
+            Email = adm.Email,
+            Perfil = adm.Perfil,
+            Token = token
+        });
     }
     else
     {
@@ -103,7 +155,7 @@ app.MapPost("/Administradores", async ([FromBody] AdminDTO adminDTO, IAdminServi
     if (adminDTO.Perfil == null)
     {
         return Results.NotFound("O Perfil não pode ficar vazio.");
-    } 
+    }
 
     var admin = new Admin
     {
@@ -120,7 +172,7 @@ app.MapPost("/Administradores", async ([FromBody] AdminDTO adminDTO, IAdminServi
         Perfil = admin.Perfil
     });
 
-}).WithTags("Administradores");
+}).RequireAuthorization().WithTags("Administradores");
 #endregion
 
 #region Veículos
@@ -130,7 +182,7 @@ app.MapGet("/veiculos", async ([FromQuery] int? pagina, IVehicleService vehicleS
     var vehicles = await vehicleService.GetVehicles(pagina);
 
     return Results.Ok(vehicles);
-}).WithTags("Veiculos");
+}).RequireAuthorization().WithTags("Veiculos");
 
 app.MapGet("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleService) =>
 {
@@ -142,7 +194,7 @@ app.MapGet("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleS
     }
 
     return Results.Ok(vehicleId);
-}).WithTags("Veiculos");
+}).RequireAuthorization().WithTags("Veiculos");
 
 app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleService vehicleService) =>
 {
@@ -171,7 +223,7 @@ app.MapPost("/veiculos", async ([FromBody] VehicleDTO veiculoDTO, IVehicleServic
     await vehicleService.GetVehicleCreate(vehicle);
 
     return Results.Created($"/veiculo/{vehicle.Id}", vehicle);
-}).WithTags("Veiculos");
+}).RequireAuthorization().WithTags("Veiculos");
 
 app.MapPut("/veiculos/{id}", async ([FromRoute] int id, VehicleDTO vehicleDto, IVehicleService vehicleService) =>
 {
@@ -204,7 +256,7 @@ app.MapPut("/veiculos/{id}", async ([FromRoute] int id, VehicleDTO vehicleDto, I
     await vehicleService.GetVehicleUpdate(vehicle);
 
     return Results.Ok(vehicle);
-}).WithTags("Veiculos");
+}).RequireAuthorization().WithTags("Veiculos");
 
 app.MapDelete("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehicleService) =>
 {
@@ -218,9 +270,12 @@ app.MapDelete("/veiculos/{id}", async ([FromRoute] int id, IVehicleService vehic
     await vehicleService.GetVehicleDelete(vehicle);
 
     return Results.Ok();
-}).WithTags("Veiculos");
+}).RequireAuthorization().WithTags("Veiculos");
 #endregion
 
 #region App
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.Run();
 #endregion
