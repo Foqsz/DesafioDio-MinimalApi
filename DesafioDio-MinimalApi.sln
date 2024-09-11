@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesafioDio-MinimalApi", "DesafioDio-MinimalApi\DesafioDio-MinimalApi.csproj", "{B10ACA0E-6A1E-448C-826B-C3916AAF521E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesafioDio-MinimalApi", "DesafioDio-MinimalApi\DesafioDio-MinimalApi.csproj", "{B10ACA0E-6A1E-448C-826B-C3916AAF521E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMinimalApi", "TestMinimalApi\TestMinimalApi.csproj", "{77CB5D69-13F4-4D76-8EE1-501D7DB84A1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{B10ACA0E-6A1E-448C-826B-C3916AAF521E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B10ACA0E-6A1E-448C-826B-C3916AAF521E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B10ACA0E-6A1E-448C-826B-C3916AAF521E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77CB5D69-13F4-4D76-8EE1-501D7DB84A1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77CB5D69-13F4-4D76-8EE1-501D7DB84A1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77CB5D69-13F4-4D76-8EE1-501D7DB84A1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77CB5D69-13F4-4D76-8EE1-501D7DB84A1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
